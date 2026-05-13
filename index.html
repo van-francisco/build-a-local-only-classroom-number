@@ -126,13 +126,13 @@
         <article class="dashboard-widget" draggable="true" data-widget-id="settings">
           <div class="widget-topline">
             <span class="drag-handle" aria-hidden="true"></span>
-            <span class="widget-status">Coming later</span>
+            <span class="widget-status ready-status">Ready</span>
           </div>
           <div class="widget-body">
             <h2>Settings / Backup</h2>
-            <p>Export, import, and manage hub data.</p>
+            <p>Export, import, and manage hub data</p>
           </div>
-          <button class="widget-action secondary-action" data-placeholder="Settings / Backup" data-status="Coming later." type="button">Open</button>
+          <button class="widget-action" id="openSettings" type="button">Open Settings</button>
         </article>
       </div>
     </section>
@@ -187,6 +187,66 @@
             <div class="button-row">
               <button class="secondary" id="clearSharedAbsences" type="button">Clear today's absences</button>
             </div>
+          </section>
+        </div>
+      </section>
+    </section>
+
+    <section class="groups-module settings-module" id="settingsModule" hidden>
+      <section class="groups-setup" aria-labelledby="settingsBackupTitle">
+        <div class="module-header">
+          <div>
+            <p class="mode-label">Classroom Operations Hub</p>
+            <h1 id="settingsBackupTitle">Settings / Backup</h1>
+          </div>
+          <div class="teacher-actions">
+            <button class="secondary" id="settingsBackToHub" type="button">Back to Hub</button>
+          </div>
+        </div>
+
+        <div class="groups-grid">
+          <section class="control-panel wide-panel">
+            <h3>App Data</h3>
+            <p class="hint">All data is saved only in this browser using localStorage. Export a backup before clearing browser data or switching computers.</p>
+            <div class="data-summary" id="settingsDataSummary"></div>
+          </section>
+
+          <section class="control-panel">
+            <h3>Backup</h3>
+            <button id="exportFullBackup" type="button">Export full backup</button>
+            <div class="button-row">
+              <button class="secondary" id="exportNumberPickerData" type="button">Export Number Picker data</button>
+              <button class="secondary" id="exportTimersData" type="button">Export Timers data</button>
+              <button class="secondary" id="exportRostersData" type="button">Export Rosters data</button>
+              <button class="secondary" id="exportGroupsData" type="button">Export Groups & Rotations data</button>
+              <button class="secondary" id="exportHubLayoutData" type="button">Export Hub layout data</button>
+            </div>
+          </section>
+
+          <section class="control-panel">
+            <h3>Import</h3>
+            <label for="backupFileInput">JSON backup file</label>
+            <input id="backupFileInput" type="file" accept="application/json,.json">
+            <button id="importBackup" type="button">Import backup</button>
+            <p class="private-warning" id="backupMessage"></p>
+          </section>
+
+          <section class="control-panel wide-panel">
+            <h3>Danger Zone</h3>
+            <p class="hint">Each clear action asks for confirmation. Clear all app data requires typing CLEAR ALL.</p>
+            <div class="button-row">
+              <button class="danger" id="clearNumberPickerData" type="button">Clear Number Picker data</button>
+              <button class="danger" id="clearTimersData" type="button">Clear Timers data</button>
+              <button class="danger" id="clearRostersData" type="button">Clear Rosters data</button>
+              <button class="danger" id="clearGroupsData" type="button">Clear Groups & Rotations data</button>
+              <button class="danger" id="clearHubLayoutData" type="button">Clear Hub layout</button>
+              <button class="danger" id="clearAllAppData" type="button">Clear all app data</button>
+            </div>
+          </section>
+
+          <section class="control-panel wide-panel">
+            <h3>About</h3>
+            <p class="hint">Classroom Operations Hub is local-only. It does not use a server, database, login, external APIs, external libraries, or internet dependencies.</p>
           </section>
         </div>
       </section>

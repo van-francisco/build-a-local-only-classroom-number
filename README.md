@@ -1,6 +1,6 @@
 # Classroom Operations Hub
 
-A local-only classroom operations app for teachers. Number Picker, Timers, Rosters, and Groups & Rotations are completed modules; Seating and Settings / Backup are placeholders for future tools.
+A local-only classroom operations app for teachers. Number Picker, Timers, Rosters, Groups & Rotations, and Settings / Backup are completed modules; Seating is a placeholder for future tools.
 
 ## How to Open
 
@@ -19,7 +19,7 @@ Current modules:
 - `Rosters`: complete shared roster and daily absence manager for the Hub.
 - `Groups & Rotations`: complete roster, grouping, constraint, and station rotation tools.
 - `Seating`: placeholder for seating plans and random seat changes. It says `Coming later.`
-- `Settings / Backup`: placeholder for export, import, and hub data management. It says `Coming later.`
+- `Settings / Backup`: complete export, import, and local data management tools.
 
 Click `Open Picker` on the Number Picker widget to open the working picker module. Click `Hub` in the bottom-left corner to return to the dashboard, or open `Terms of Service` and click `Back to Hub`.
 
@@ -137,6 +137,49 @@ Print buttons support:
 - Print teacher copy with notes and warnings
 - Print student-facing copy without warnings
 
+## Settings / Backup
+
+Settings / Backup is a working module for managing local app data. Click `Open Settings` on the Settings / Backup widget.
+
+The App Data section summarizes the active roster, roster count, saved group sets, timer presets, Number Picker history dates, last backup/export date, and whether a custom Hub widget layout is saved.
+
+### Full Backup
+
+Click `Export full backup` to download a JSON file named like `classroom-operations-hub-backup-YYYY-MM-DD.json`.
+
+The backup includes an export timestamp, app name, app version, and all localStorage keys used by the Hub, including:
+
+- `classroomOperationsHubWidgetLayout`
+- `classroomNumberPickerState`
+- `classroomOperationsTimers`
+- `classroomOperationsRosters`
+- `classroomOperationsGroups`
+- other `classroomOperations...` keys currently used by the app
+
+### Import Backup
+
+Choose a JSON backup file, then click `Import backup`. The app validates that the file looks like a Classroom Operations Hub backup and asks for confirmation before replacing current local data.
+
+After import, the app reloads its in-memory state from localStorage and updates the dashboard.
+
+### Individual Exports
+
+Use the individual export buttons to download only one module's data:
+
+- Number Picker data
+- Timers data
+- Rosters data
+- Groups & Rotations data
+- Hub layout data
+
+### Clear Data
+
+The Danger Zone has separate clear buttons for Number Picker, Timers, Rosters, Groups & Rotations, and Hub layout data. Each action asks for confirmation.
+
+`Clear all app data` requires typing `CLEAR ALL` and then confirming again. Export a backup first if you may need the data later.
+
+All data is saved only in this browser using localStorage. Export a backup before clearing browser data or switching computers.
+
 ## Setting the Number Range
 
 1. Open the app.
@@ -224,6 +267,8 @@ There is no PIN and no real security. Anyone using the same browser can open Tea
 ## localStorage
 
 The Hub dashboard saves widget order in a separate `localStorage` key named `classroomOperationsHubWidgetLayout`.
+
+Settings / Backup records the last export/import management timestamp in `classroomOperationsLastBackupAt`.
 
 The Timers module saves presets, labels, mode, alarm time, and sound settings in a separate `localStorage` key named `classroomOperationsTimers`.
 

@@ -1,9 +1,12 @@
 (function () {
+  const APP_NAME = "Classroom Operations Hub";
+  const APP_VERSION = "1.0.0";
   const STORAGE_KEY = "classroomNumberPickerState";
   const HUB_LAYOUT_KEY = "classroomOperationsHubWidgetLayout";
   const TIMER_STORAGE_KEY = "classroomOperationsTimers";
   const GROUPS_STORAGE_KEY = "classroomOperationsGroups";
   const ROSTER_STORAGE_KEY = "classroomOperationsRosters";
+  const BACKUP_META_KEY = "classroomOperationsLastBackupAt";
   const DEFAULT_WIDGET_ORDER = ["numberPicker", "timers", "rosters", "groups", "seating", "settings"];
   const FAIRNESS_MODES = {
     daily: "Daily cycle",
@@ -80,7 +83,8 @@
   const DEFAULT_ROSTER_STATE = {
     rosters: [],
     activeRosterId: "",
-    absencesByDate: {}
+    absencesByDate: {},
+    migratedGroupsRosters: false
   };
 
   const elements = {
@@ -92,6 +96,7 @@
     openTimers: document.getElementById("openTimers"),
     openRosters: document.getElementById("openRosters"),
     openGroups: document.getElementById("openGroups"),
+    openSettings: document.getElementById("openSettings"),
     widgetRange: document.getElementById("widgetRange"),
     widgetFairnessMode: document.getElementById("widgetFairnessMode"),
     widgetNumbersLeft: document.getElementById("widgetNumbersLeft"),
@@ -117,6 +122,24 @@
     sharedRosterWarnings: document.getElementById("sharedRosterWarnings"),
     sharedAbsenceList: document.getElementById("sharedAbsenceList"),
     clearSharedAbsences: document.getElementById("clearSharedAbsences"),
+    settingsModule: document.getElementById("settingsModule"),
+    settingsBackToHub: document.getElementById("settingsBackToHub"),
+    settingsDataSummary: document.getElementById("settingsDataSummary"),
+    exportFullBackup: document.getElementById("exportFullBackup"),
+    exportNumberPickerData: document.getElementById("exportNumberPickerData"),
+    exportTimersData: document.getElementById("exportTimersData"),
+    exportRostersData: document.getElementById("exportRostersData"),
+    exportGroupsData: document.getElementById("exportGroupsData"),
+    exportHubLayoutData: document.getElementById("exportHubLayoutData"),
+    backupFileInput: document.getElementById("backupFileInput"),
+    importBackup: document.getElementById("importBackup"),
+    backupMessage: document.getElementById("backupMessage"),
+    clearNumberPickerData: document.getElementById("clearNumberPickerData"),
+    clearTimersData: document.getElementById("clearTimersData"),
+    clearRostersData: document.getElementById("clearRostersData"),
+    clearGroupsData: document.getElementById("clearGroupsData"),
+    clearHubLayoutData: document.getElementById("clearHubLayoutData"),
+    clearAllAppData: document.getElementById("clearAllAppData"),
     groupsModule: document.getElementById("groupsModule"),
     groupsSetupView: document.getElementById("groupsSetupView"),
     groupsProjectorView: document.getElementById("groupsProjectorView"),
@@ -260,6 +283,7 @@
     elements.openTimers.addEventListener("click", showTimers);
     elements.openRosters.addEventListener("click", showRosters);
     elements.openGroups.addEventListener("click", showGroups);
+    elements.openSettings.addEventListener("click", showSettings);
     elements.resetWidgetLayout.addEventListener("click", resetWidgetLayout);
     elements.placeholderBack.addEventListener("click", showHub);
     document.querySelectorAll("[data-placeholder]").forEach((button) => {
@@ -299,6 +323,20 @@
     elements.setActiveRoster.addEventListener("click", setSelectedActiveRoster);
     elements.clearSharedAbsences.addEventListener("click", clearSharedAbsences);
     elements.sharedRosterInput.addEventListener("input", updateSharedRosterFromInput);
+    elements.settingsBackToHub.addEventListener("click", showHub);
+    elements.exportFullBackup.addEventListener("click", exportFullBackup);
+    elements.exportNumberPickerData.addEventListener("click", () => exportStorageKeys("number-picker", [STORAGE_KEY]));
+    elements.exportTimersData.addEventListener("click", () => exportStorageKeys("timers", [TIMER_STORAGE_KEY]));
+    elements.exportRostersData.addEventListener("click", () => exportStorageKeys("rosters", [ROSTER_STORAGE_KEY]));
+    elements.exportGroupsData.addEventListener("click", () => exportStorageKeys("groups-rotations", [GROUPS_STORAGE_KEY]));
+    elements.exportHubLayoutData.addEventListener("click", () => exportStorageKeys("hub-layout", [HUB_LAYOUT_KEY]));
+    elements.importBackup.addEventListener("click", importBackup);
+    elements.clearNumberPickerData.addEventListener("click", () => clearStorageKeyWithConfirmation(STORAGE_KEY, "Number Picker data"));
+    elements.clearTimersData.addEventListener("click", () => clearStorageKeyWithConfirmation(TIMER_STORAGE_KEY, "Timers data"));
+    elements.clearRostersData.addEventListener("click", () => clearStorageKeyWithConfirmation(ROSTER_STORAGE_KEY, "Rosters data"));
+    elements.clearGroupsData.addEventListener("click", () => clearStorageKeyWithConfirmation(GROUPS_STORAGE_KEY, "Groups & Rotations data"));
+    elements.clearHubLayoutData.addEventListener("click", () => clearStorageKeyWithConfirmation(HUB_LAYOUT_KEY, "Hub layout"));
+    elements.clearAllAppData.addEventListener("click", clearAllAppData);
     elements.groupsBackToHub.addEventListener("click", showHub);
     elements.groupsProjectorBackToHub.addEventListener("click", showHub);
     elements.groupsProjectorOpen.addEventListener("click", showGroupsProjector);
@@ -489,7 +527,10 @@
       absencesByDate: shared.absencesByDate && typeof shared.absencesByDate === "object" ? shared.absencesByDate : {}
     };
 
-    migrateGroupsRosters(normalized, groupsSnapshot);
+    if (!normalized.migratedGroupsRosters) {
+      migrateGroupsRosters(normalized, groupsSnapshot);
+      normalized.migratedGroupsRosters = true;
+    }
     if (!normalized.activeRosterId && normalized.rosters[0]) {
       normalized.activeRosterId = normalized.rosters[0].id;
     }
@@ -774,6 +815,164 @@
     saveRosterState();
     renderRosterManager();
     renderGroups();
+  }
+
+  function getAppStorageKeys() {
+    const keys = new Set([HUB_LAYOUT_KEY, STORAGE_KEY, TIMER_STORAGE_KEY, ROSTER_STORAGE_KEY, GROUPS_STORAGE_KEY, BACKUP_META_KEY]);
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index);
+      if (key === STORAGE_KEY || String(key).startsWith("classroomOperations")) {
+        keys.add(key);
+      }
+    }
+    return [...keys].filter((key) => localStorage.getItem(key) !== null);
+  }
+
+  function readStorageValue(key) {
+    const value = localStorage.getItem(key);
+    if (value === null) return null;
+    try {
+      return JSON.parse(value);
+    } catch (error) {
+      return value;
+    }
+  }
+
+  function createBackup(keys) {
+    return {
+      exportedAt: new Date().toISOString(),
+      appName: APP_NAME,
+      appVersion: APP_VERSION,
+      data: keys.reduce((data, key) => {
+        data[key] = readStorageValue(key);
+        return data;
+      }, {})
+    };
+  }
+
+  function exportFullBackup() {
+    const exportedAt = new Date().toISOString();
+    localStorage.setItem(BACKUP_META_KEY, exportedAt);
+    const backup = createBackup(getAppStorageKeys());
+    backup.exportedAt = exportedAt;
+    downloadJson(backup, `classroom-operations-hub-backup-${todayKey()}.json`);
+    showBackupMessage("Full backup exported.", "ready");
+    renderSettings();
+  }
+
+  function exportStorageKeys(label, keys) {
+    const exportedAt = new Date().toISOString();
+    localStorage.setItem(BACKUP_META_KEY, exportedAt);
+    const backup = createBackup(keys.filter((key) => localStorage.getItem(key) !== null));
+    backup.exportedAt = exportedAt;
+    downloadJson(backup, `classroom-operations-hub-${label}-${todayKey()}.json`);
+    showBackupMessage(`${label.replace(/-/g, " ")} data exported.`, "ready");
+    renderSettings();
+  }
+
+  function downloadJson(data, filename) {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function importBackup() {
+    const file = elements.backupFileInput.files?.[0];
+    if (!file) {
+      showBackupMessage("Choose a JSON backup file first.", "warning");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      try {
+        const backup = JSON.parse(reader.result);
+        if (!isValidBackup(backup)) {
+          showBackupMessage("That file does not look like a Classroom Operations Hub backup.", "warning");
+          return;
+        }
+        if (!window.confirm("Import this backup and replace current app data?")) {
+          return;
+        }
+        Object.entries(backup.data).forEach(([key, value]) => {
+          if (isAllowedImportKey(key)) {
+            localStorage.setItem(key, typeof value === "string" ? value : JSON.stringify(value));
+          }
+        });
+        localStorage.setItem(BACKUP_META_KEY, new Date().toISOString());
+        reloadAppStateFromStorage();
+        showBackupMessage("Backup imported successfully.", "ready");
+      } catch (error) {
+        showBackupMessage("Import failed. Check that the file is valid JSON.", "warning");
+      }
+    });
+    reader.readAsText(file);
+  }
+
+  function isValidBackup(backup) {
+    return backup
+      && backup.appName === APP_NAME
+      && backup.data
+      && typeof backup.data === "object"
+      && Object.keys(backup.data).some(isAllowedImportKey);
+  }
+
+  function isAllowedImportKey(key) {
+    return key === STORAGE_KEY || String(key).startsWith("classroomOperations");
+  }
+
+  function clearStorageKeyWithConfirmation(key, label) {
+    if (!window.confirm(`Clear ${label}? This cannot be undone unless you have a backup.`)) {
+      return;
+    }
+    if (key === ROSTER_STORAGE_KEY) {
+      localStorage.setItem(ROSTER_STORAGE_KEY, JSON.stringify({ ...DEFAULT_ROSTER_STATE, migratedGroupsRosters: true }));
+    } else {
+      localStorage.removeItem(key);
+    }
+    reloadAppStateFromStorage();
+    showBackupMessage(`${label} cleared.`, "ready");
+  }
+
+  function clearAllAppData() {
+    const typed = window.prompt("Type CLEAR ALL to clear all Classroom Operations Hub data.");
+    if (typed !== "CLEAR ALL") {
+      showBackupMessage("Clear all canceled.", "warning");
+      return;
+    }
+    if (!window.confirm("Clear all app data now? This cannot be undone unless you have a backup.")) {
+      return;
+    }
+    getAppStorageKeys().forEach((key) => localStorage.removeItem(key));
+    reloadAppStateFromStorage();
+    getAppStorageKeys().forEach((key) => localStorage.removeItem(key));
+    renderSettings();
+    showBackupMessage("All app data cleared.", "ready");
+  }
+
+  function reloadAppStateFromStorage() {
+    state = loadState();
+    timerState = loadTimerState();
+    groupsState = loadGroupsState();
+    rosterState = loadRosterState(groupsState);
+    timerRuntime = createTimerRuntime(timerState.durationSeconds);
+    renderWidgetOrder();
+    render();
+    renderTimer();
+    renderRosterManager();
+    renderGroups();
+    renderSettings();
+  }
+
+  function showBackupMessage(message, kind) {
+    elements.backupMessage.textContent = message;
+    elements.backupMessage.className = `private-warning ${kind === "warning" ? "warning" : "ready"}`;
   }
 
   function updateGroupsSettingsFromControls() {
@@ -1896,6 +2095,7 @@
     elements.numberPickerModule.hidden = true;
     elements.timersModule.hidden = true;
     elements.rostersModule.hidden = true;
+    elements.settingsModule.hidden = true;
     elements.groupsModule.hidden = true;
     elements.placeholderView.hidden = true;
     elements.teacherView.hidden = true;
@@ -1904,6 +2104,9 @@
     renderTimerWidget();
     renderRostersWidget();
     renderGroupsWidget();
+    if (!elements.settingsModule.hidden) {
+      renderSettings();
+    }
     elements.openNumberPicker.focus();
   }
 
@@ -1912,6 +2115,7 @@
     elements.placeholderView.hidden = true;
     elements.timersModule.hidden = true;
     elements.rostersModule.hidden = true;
+    elements.settingsModule.hidden = true;
     elements.groupsModule.hidden = true;
     elements.numberPickerModule.hidden = false;
     elements.teacherView.hidden = true;
@@ -1925,6 +2129,7 @@
     elements.numberPickerModule.hidden = true;
     elements.teacherView.hidden = true;
     elements.rostersModule.hidden = true;
+    elements.settingsModule.hidden = true;
     elements.groupsModule.hidden = true;
     elements.timersModule.hidden = false;
     elements.timerSettingsPanel.hidden = true;
@@ -1937,6 +2142,7 @@
     elements.numberPickerModule.hidden = true;
     elements.timersModule.hidden = true;
     elements.rostersModule.hidden = true;
+    elements.settingsModule.hidden = true;
     elements.groupsModule.hidden = true;
     elements.teacherView.hidden = true;
     elements.timerSettingsPanel.hidden = true;
@@ -1952,6 +2158,7 @@
     elements.numberPickerModule.hidden = true;
     elements.timersModule.hidden = true;
     elements.rostersModule.hidden = true;
+    elements.settingsModule.hidden = true;
     elements.teacherView.hidden = true;
     elements.groupsModule.hidden = false;
     showGroupsSetup();
@@ -1964,11 +2171,26 @@
     elements.numberPickerModule.hidden = true;
     elements.timersModule.hidden = true;
     elements.groupsModule.hidden = true;
+    elements.settingsModule.hidden = true;
     elements.teacherView.hidden = true;
     elements.timerSettingsPanel.hidden = true;
     elements.rostersModule.hidden = false;
     renderRosterManager();
     elements.sharedRosterInput.focus();
+  }
+
+  function showSettings() {
+    elements.hubView.hidden = true;
+    elements.placeholderView.hidden = true;
+    elements.numberPickerModule.hidden = true;
+    elements.timersModule.hidden = true;
+    elements.rostersModule.hidden = true;
+    elements.groupsModule.hidden = true;
+    elements.teacherView.hidden = true;
+    elements.timerSettingsPanel.hidden = true;
+    elements.settingsModule.hidden = false;
+    renderSettings();
+    elements.exportFullBackup.focus();
   }
 
   function showGroupsSetup() {
@@ -2216,6 +2438,41 @@
   function renderGroupsWidget() {
     elements.groupsWidgetRoster.textContent = activeRoster()?.name || "None";
     elements.groupsWidgetSet.textContent = groupsState.groupSetName || "None";
+  }
+
+  function renderSettings() {
+    const roster = activeRoster();
+    const summary = [
+      ["Active roster", roster?.name || "None"],
+      ["Number of rosters", rosterState.rosters.length],
+      ["Saved group sets", Object.keys(groupsState.groupSets || {}).length],
+      ["Timer presets", Array.isArray(timerState.presets) ? timerState.presets.length : 0],
+      ["Number Picker history dates", Object.keys(state.historyByDate || {}).length],
+      ["Last backup/export", formatStoredTimestamp(localStorage.getItem(BACKUP_META_KEY))],
+      ["Hub layout saved", localStorage.getItem(HUB_LAYOUT_KEY) ? "Yes" : "No"]
+    ];
+
+    elements.settingsDataSummary.innerHTML = "";
+    summary.forEach(([label, value]) => {
+      const item = document.createElement("div");
+      item.className = "summary-item";
+      const labelElement = document.createElement("span");
+      labelElement.className = "summary-label";
+      labelElement.textContent = label;
+      const valueElement = document.createElement("span");
+      valueElement.className = "summary-value";
+      valueElement.textContent = value;
+      item.appendChild(labelElement);
+      item.appendChild(valueElement);
+      elements.settingsDataSummary.appendChild(item);
+    });
+  }
+
+  function formatStoredTimestamp(value) {
+    if (!value) return "None";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
   }
 
   function isNumberPickerActive() {
