@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Classroom Operations Hub</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hub-view" id="hubView" aria-labelledby="hubTitle">
+      <div class="hub-header">
+        <div>
+          <p class="mode-label">Local-only classroom tools</p>
+          <h1 id="hubTitle">Classroom Operations Hub</h1>
+          <p>A clean dashboard for live classroom operations. Drag widgets to arrange your workspace.</p>
+        </div>
+        <button class="layout-reset" id="resetWidgetLayout" type="button">Reset widget layout</button>
+      </div>
+
+      <div class="dashboard-grid" id="dashboardGrid" aria-label="Classroom Operations Hub widgets">
+        <article class="dashboard-widget active-widget" draggable="true" data-widget-id="numberPicker">
+          <div class="widget-topline">
+            <span class="drag-handle" aria-hidden="true"></span>
+            <span class="widget-status ready-status">Ready now</span>
+          </div>
+          <div class="widget-body">
+            <h2>Number Picker</h2>
+            <p>Pick student numbers with fairness memory.</p>
+          </div>
+          <dl class="widget-metrics" id="numberPickerStatus">
+            <div>
+              <dt>Range</dt>
+              <dd id="widgetRange">1-30</dd>
+            </div>
+            <div>
+              <dt>Mode</dt>
+              <dd id="widgetFairnessMode">Daily cycle</dd>
+            </div>
+            <div>
+              <dt>Left today</dt>
+              <dd id="widgetNumbersLeft">30</dd>
+            </div>
+          </dl>
+          <button class="widget-action" id="openNumberPicker" type="button">Open Picker</button>
+        </article>
+
+        <article class="dashboard-widget" draggable="true" data-widget-id="timers">
+          <div class="widget-topline">
+            <span class="drag-handle" aria-hidden="true"></span>
+            <span class="widget-status ready-status">Ready</span>
+          </div>
+          <div class="widget-body">
+            <h2>Timers</h2>
+            <p>Countdown, stopwatch, and alarm tools.</p>
+          </div>
+          <dl class="widget-metrics compact-metrics">
+            <div>
+              <dt>Mode</dt>
+              <dd id="timerWidgetMode">Timer</dd>
+            </div>
+            <div>
+              <dt>Preset</dt>
+              <dd id="timerWidgetPreset">Clean up</dd>
+            </div>
+          </dl>
+          <button class="widget-action" id="openTimers" type="button">Open Timers</button>
+        </article>
+
+        <article class="dashboard-widget" draggable="true" data-widget-id="rosters">
+          <div class="widget-topline">
+            <span class="drag-handle" aria-hidden="true"></span>
+            <span class="widget-status ready-status">Ready</span>
+          </div>
+          <div class="widget-body">
+            <h2>Rosters</h2>
+            <p>Manage shared rosters and today's absences.</p>
+          </div>
+          <dl class="widget-metrics compact-metrics">
+            <div>
+              <dt>Active</dt>
+              <dd id="rostersWidgetActive">None</dd>
+            </div>
+            <div>
+              <dt>Eligible</dt>
+              <dd id="rostersWidgetEligible">0</dd>
+            </div>
+          </dl>
+          <button class="widget-action" id="openRosters" type="button">Manage Rosters</button>
+        </article>
+
+        <article class="dashboard-widget" draggable="true" data-widget-id="groups">
+          <div class="widget-topline">
+            <span class="drag-handle" aria-hidden="true"></span>
+            <span class="widget-status ready-status">Ready</span>
+          </div>
+          <div class="widget-body">
+            <h2>Groups & Rotations</h2>
+            <p>Build student groups and station rotations.</p>
+          </div>
+          <dl class="widget-metrics compact-metrics">
+            <div>
+              <dt>Roster</dt>
+              <dd id="groupsWidgetRoster">None</dd>
+            </div>
+            <div>
+              <dt>Group set</dt>
+              <dd id="groupsWidgetSet">None</dd>
+            </div>
+          </dl>
+          <button class="widget-action" id="openGroups" type="button">Open Groups</button>
+        </article>
+
+        <article class="dashboard-widget" draggable="true" data-widget-id="seating">
+          <div class="widget-topline">
+            <span class="drag-handle" aria-hidden="true"></span>
+            <span class="widget-status">Coming later</span>
+          </div>
+          <div class="widget-body">
+            <h2>Seating</h2>
+            <p>Plan and randomize seat changes.</p>
+          </div>
+          <button class="widget-action secondary-action" data-placeholder="Seating" data-status="Coming later." type="button">Open</button>
+        </article>
+
+        <article class="dashboard-widget" draggable="true" data-widget-id="settings">
+          <div class="widget-topline">
+            <span class="drag-handle" aria-hidden="true"></span>
+            <span class="widget-status">Coming later</span>
+          </div>
+          <div class="widget-body">
+            <h2>Settings / Backup</h2>
+            <p>Export, import, and manage hub data.</p>
+          </div>
+          <button class="widget-action secondary-action" data-placeholder="Settings / Backup" data-status="Coming later." type="button">Open</button>
+        </article>
+      </div>
+    </section>
+
+    <section class="placeholder-view" id="placeholderView" aria-labelledby="placeholderTitle" hidden>
+      <button class="secondary hub-back" id="placeholderBack" type="button">Back to Hub</button>
+      <div class="placeholder-content">
+        <p class="mode-label">Classroom Operations Hub</p>
+        <h1 id="placeholderTitle">Timers</h1>
+        <p id="placeholderStatus">Coming next.</p>
+      </div>
+    </section>
+
+    <section class="groups-module rosters-module" id="rostersModule" hidden>
+      <section class="groups-setup" aria-labelledby="rostersTitle">
+        <div class="module-header">
+          <div>
+            <p class="mode-label">Classroom Operations Hub</p>
+            <h1 id="rostersTitle">Roster Manager</h1>
+          </div>
+          <div class="teacher-actions">
+            <button class="secondary" id="rostersBackToHub" type="button">Back to Hub</button>
+          </div>
+        </div>
+
+        <div class="groups-grid">
+          <section class="control-panel">
+            <h3>Shared roster</h3>
+            <label for="sharedRosterSelect">Saved roster</label>
+            <select id="sharedRosterSelect"></select>
+            <label for="sharedRosterName">Roster name</label>
+            <input id="sharedRosterName" type="text" placeholder="Room 12">
+            <label for="sharedRosterInput">Paste student names, one per line</label>
+            <textarea id="sharedRosterInput" rows="10"></textarea>
+            <div class="button-row">
+              <button id="createSharedRoster" type="button">Create roster</button>
+              <button class="secondary" id="saveSharedRoster" type="button">Save roster</button>
+              <button class="secondary" id="loadSharedRoster" type="button">Load roster</button>
+              <button class="secondary" id="renameSharedRoster" type="button">Rename roster</button>
+              <button class="secondary" id="duplicateSharedRoster" type="button">Duplicate roster</button>
+              <button class="secondary" id="setActiveRoster" type="button">Set active roster</button>
+              <button class="danger" id="deleteSharedRoster" type="button">Delete roster</button>
+            </div>
+            <p class="hint" id="sharedRosterCounts">0 students. 0 eligible today.</p>
+            <p class="private-warning warning" id="sharedRosterWarnings"></p>
+          </section>
+
+          <section class="control-panel">
+            <h3>Today's absences</h3>
+            <p class="hint">Absences are saved for today only and do not change the roster.</p>
+            <div class="absence-list" id="sharedAbsenceList"></div>
+            <div class="button-row">
+              <button class="secondary" id="clearSharedAbsences" type="button">Clear today's absences</button>
+            </div>
+          </section>
+        </div>
+      </section>
+    </section>
+
+    <section class="groups-module" id="groupsModule" hidden>
+      <section class="groups-setup" id="groupsSetupView" aria-labelledby="groupsTitle">
+        <div class="module-header">
+          <div>
+            <p class="mode-label">Classroom Operations Hub</p>
+            <h1 id="groupsTitle">Groups & Rotations</h1>
+          </div>
+          <div class="teacher-actions">
+            <button class="secondary" id="groupsProjectorOpen" type="button">Projector View</button>
+            <button class="secondary" id="groupsBackToHub" type="button">Back to Hub</button>
+          </div>
+        </div>
+
+        <div class="groups-grid">
+          <section class="control-panel">
+            <h3>Roster setup</h3>
+            <label for="rosterSelect">Saved roster</label>
+            <select id="rosterSelect"></select>
+            <label for="rosterName">Roster name</label>
+            <input id="rosterName" type="text" placeholder="Period 1">
+            <label for="rosterInput">Paste roster, one student per line</label>
+            <textarea id="rosterInput" rows="8"></textarea>
+            <div class="button-row">
+              <button id="saveRoster" type="button">Save roster</button>
+              <button class="secondary" id="loadRoster" type="button">Load saved roster</button>
+              <button class="secondary" id="renameRoster" type="button">Rename roster</button>
+              <button class="secondary" id="clearRoster" type="button">Clear roster</button>
+              <button class="danger" id="deleteRoster" type="button">Delete roster</button>
+            </div>
+            <p class="hint" id="rosterCounts">0 students. 0 eligible today.</p>
+            <div class="absence-list" id="absenceList"></div>
+          </section>
+
+          <section class="control-panel">
+            <h3>Grouping setup</h3>
+            <label for="groupingMode">Grouping mode</label>
+            <select id="groupingMode">
+              <option value="groups">Number of groups</option>
+              <option value="size">Students per group</option>
+            </select>
+            <label class="group-count-setting" for="numberOfGroups">Number of groups</label>
+            <input class="group-count-setting" id="numberOfGroups" type="number" min="1" inputmode="numeric">
+            <label class="group-size-setting" for="studentsPerGroup">Students per group</label>
+            <input class="group-size-setting" id="studentsPerGroup" type="number" min="1" inputmode="numeric">
+            <label for="groupSetName">Group set name</label>
+            <input id="groupSetName" type="text" placeholder="Today's groups">
+            <div class="button-row">
+              <button id="generateGroups" type="button">Generate Groups</button>
+              <button class="secondary" id="saveGroupSet" type="button">Save group set</button>
+            </div>
+            <label for="groupSetSelect">Saved group set</label>
+            <select id="groupSetSelect"></select>
+            <div class="button-row">
+              <button class="secondary" id="loadGroupSet" type="button">Load group set</button>
+              <button class="danger" id="deleteGroupSet" type="button">Delete group set</button>
+            </div>
+            <p class="private-warning warning" id="groupsWarnings"></p>
+          </section>
+
+          <section class="control-panel">
+            <h3>Constraints</h3>
+            <label for="keepApartInput">Keep-apart pairs</label>
+            <textarea id="keepApartInput" rows="4" placeholder="Student A | Student B"></textarea>
+            <label for="mustPairInput">Must-pair students</label>
+            <textarea id="mustPairInput" rows="4" placeholder="Student A | Student B"></textarea>
+            <label for="lockedInput">Locked group assignments</label>
+            <textarea id="lockedInput" rows="4" placeholder="Student A | Group 1"></textarea>
+          </section>
+
+          <section class="control-panel">
+            <h3>Stations</h3>
+            <label for="stationListSelect">Saved station list</label>
+            <select id="stationListSelect"></select>
+            <label for="stationListName">Station list name</label>
+            <input id="stationListName" type="text" placeholder="Math rotations">
+            <label for="stationsInput">Station names, one per line</label>
+            <textarea id="stationsInput" rows="7" placeholder="Station 1: Teacher Table"></textarea>
+            <div class="button-row">
+              <button id="saveStationList" type="button">Save station list</button>
+              <button class="secondary" id="loadStationList" type="button">Load station list</button>
+              <button class="secondary" id="clearStationList" type="button">Clear station list</button>
+              <button class="danger" id="deleteStationList" type="button">Delete station list</button>
+            </div>
+          </section>
+
+          <section class="control-panel wide-panel">
+            <h3>Generated groups</h3>
+            <div class="move-row">
+              <select id="moveStudentSelect"></select>
+              <select id="moveGroupSelect"></select>
+              <button class="secondary" id="moveStudent" type="button">Move student</button>
+              <button class="secondary" id="rerollGroups" type="button">Reroll</button>
+            </div>
+            <div class="generated-groups" id="generatedGroups"></div>
+          </section>
+
+          <section class="control-panel wide-panel">
+            <h3>Rotation schedule</h3>
+            <div class="rotation-controls">
+              <label>
+                Rotation length minutes
+                <input id="rotationMinutes" type="number" min="1" inputmode="numeric">
+              </label>
+              <label>
+                Transition minutes
+                <input id="transitionMinutes" type="number" min="0" inputmode="numeric">
+              </label>
+              <label>
+                Optional start time
+                <input id="rotationStartTime" type="time">
+              </label>
+              <button id="generateRotation" type="button">Generate Rotation Schedule</button>
+            </div>
+            <p class="hint" id="rotationTotalTime"></p>
+            <div class="rotation-table-wrap" id="rotationTableWrap"></div>
+          </section>
+
+          <section class="control-panel wide-panel print-actions">
+            <h3>Print</h3>
+            <div class="button-row">
+              <button class="secondary" data-print-mode="groups" type="button">Print group list</button>
+              <button class="secondary" data-print-mode="rotations" type="button">Print rotation schedule</button>
+              <button class="secondary" data-print-mode="teacher" type="button">Print teacher copy</button>
+              <button class="secondary" data-print-mode="student" type="button">Print student copy</button>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="groups-projector" id="groupsProjectorView" hidden>
+        <button class="timer-hub" id="groupsProjectorBackToSetup" type="button">Back to setup</button>
+        <button class="timer-settings-open" id="groupsProjectorBackToHub" type="button">Back to Hub</button>
+        <div class="groups-projector-content">
+          <p class="mode-label">Groups & Rotations</p>
+          <h1 id="groupsProjectorTitle">Groups</h1>
+          <div class="projector-options">
+            <button class="secondary" id="showGroupsProjector" type="button">Show group list</button>
+            <button class="secondary" id="showRotationProjector" type="button">Show rotation schedule</button>
+            <button class="secondary" id="showCurrentRound" type="button">Show current round</button>
+            <button class="secondary" id="showNextRound" type="button">Show next round</button>
+          </div>
+          <div id="groupsProjectorOutput"></div>
+        </div>
+      </section>
+    </section>
+
+    <section class="timers-module" id="timersModule" hidden>
+      <section class="timer-display" id="timerDisplay" aria-labelledby="timerLabelDisplay">
+        <button class="timer-hub" id="timerBackToHub" type="button">Back to Hub</button>
+        <button class="timer-settings-open" id="openTimerSettings" type="button">Settings</button>
+
+        <div class="timer-content">
+          <p class="timer-mode" id="timerModeDisplay">Timer</p>
+          <h1 id="timerLabelDisplay">Clean up</h1>
+          <div class="timer-time" id="timerTimeDisplay" aria-live="polite" aria-atomic="true">03:00</div>
+          <p class="timer-message" id="timerMessageDisplay"></p>
+          <ul class="timer-routine" id="timerRoutineDisplay"></ul>
+
+          <div class="timer-controls">
+            <button id="timerStartPause" type="button">Start</button>
+            <button class="secondary" id="timerReset" type="button">Reset / Clear</button>
+            <button class="secondary countdown-only" id="timerAddOne" type="button">Add 1 minute</button>
+            <button class="secondary countdown-only" id="timerAddTwo" type="button">Add 2 minutes</button>
+            <button class="secondary stopwatch-only" id="timerLap" type="button" hidden>Lap</button>
+            <button class="secondary alarm-only" id="timerCancelAlarm" type="button" hidden>Cancel alarm</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="timer-settings-panel" id="timerSettingsPanel" aria-labelledby="timerSettingsTitle" hidden>
+        <div class="timer-settings-card">
+          <div class="teacher-header">
+            <div>
+              <p class="mode-label">Timer setup</p>
+              <h2 id="timerSettingsTitle">Timer Settings</h2>
+            </div>
+            <div class="teacher-actions">
+              <button class="secondary" id="timerSettingsBackToHub" type="button">Back to Hub</button>
+              <button class="secondary" id="closeTimerSettings" type="button">Return to timer display</button>
+            </div>
+          </div>
+
+          <div class="timer-settings-grid">
+            <section class="control-panel">
+              <h3>Mode</h3>
+              <label for="timerMode">Mode selector</label>
+              <select id="timerMode">
+                <option value="countdown">Countdown Timer</option>
+                <option value="stopwatch">Stopwatch</option>
+                <option value="alarm">Alarm</option>
+              </select>
+
+              <label for="timerLabel">Label/title</label>
+              <input id="timerLabel" type="text" placeholder="Clean up">
+
+              <div class="duration-fields countdown-settings">
+                <label>
+                  Hours
+                  <input id="timerHours" type="number" min="0" inputmode="numeric">
+                </label>
+                <label>
+                  Minutes
+                  <input id="timerMinutes" type="number" min="0" inputmode="numeric">
+                </label>
+                <label>
+                  Seconds
+                  <input id="timerSeconds" type="number" min="0" inputmode="numeric">
+                </label>
+              </div>
+
+              <label class="alarm-settings" for="alarmTimeInput">Alarm time</label>
+              <input class="alarm-settings" id="alarmTimeInput" type="time">
+
+              <label for="timerRoutine">Routine steps / notes</label>
+              <textarea id="timerRoutine" rows="5" placeholder="One item per line"></textarea>
+            </section>
+
+            <section class="control-panel countdown-settings">
+              <h3>Presets</h3>
+              <label for="timerPreset">Preset selector</label>
+              <select id="timerPreset"></select>
+              <div class="button-row">
+                <button id="saveTimerPreset" type="button">Save preset</button>
+                <button class="secondary" id="deleteTimerPreset" type="button">Delete preset</button>
+              </div>
+            </section>
+
+            <section class="control-panel">
+              <h3>Sound</h3>
+              <label class="toggle-line">
+                <input id="timerSoundEnabled" type="checkbox">
+                Sound on
+              </label>
+              <label for="timerSoundType">Sound type</label>
+              <select id="timerSoundType">
+                <option value="soft">Soft chime</option>
+                <option value="bell">Bell</option>
+                <option value="beep">Beep</option>
+              </select>
+              <div class="button-row">
+                <button class="secondary" id="testTimerSound" type="button">Test sound</button>
+              </div>
+              <p class="hint">Sound is generated locally and may require a page click before browsers allow it.</p>
+            </section>
+
+            <section class="control-panel stopwatch-settings">
+              <h3>Stopwatch laps</h3>
+              <ol class="lap-list" id="lapList"></ol>
+            </section>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section class="number-picker-module" id="numberPickerModule" hidden>
+      <section class="projector-view" aria-labelledby="appTitle">
+        <button class="projector-hub" id="projectorHub" type="button">Hub</button>
+        <button class="teacher-open" id="openTeacherControls" type="button">Terms of Service</button>
+
+        <div class="projector-content">
+          <h1 id="appTitle">Classroom Number Picker</h1>
+          <div class="number-stage" aria-live="polite" aria-atomic="true">
+            <div class="picked-number placeholder-display" id="pickedNumber">Ready</div>
+          </div>
+          <button class="pick-button" id="pickButton" type="button">Pick Number</button>
+
+          <div class="projector-details">
+            <p class="numbers-left" id="numbersLeftText" hidden></p>
+            <section class="recent-picks" id="recentPicksPanel" aria-labelledby="recentPicksTitle" hidden>
+              <h2 id="recentPicksTitle">Recent picks</h2>
+              <div class="recent-list" id="recentPicksList"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section class="teacher-view" id="teacherView" aria-labelledby="teacherTitle" hidden>
+      <div class="teacher-header">
+        <div>
+          <p class="mode-label">Private setup</p>
+          <h2 id="teacherTitle">Teacher Controls</h2>
+        </div>
+        <div class="teacher-actions">
+          <button class="secondary" id="backToHub" type="button">Back to Hub</button>
+          <button class="secondary" id="returnProjector" type="button">Return to Projector Mode</button>
+        </div>
+      </div>
+
+      <div class="controls-grid">
+        <section class="control-panel" aria-labelledby="rangeTitle">
+          <h3 id="rangeTitle">Number range</h3>
+          <div class="range-fields">
+            <label>
+              Start
+              <input id="rangeStart" type="number" inputmode="numeric">
+            </label>
+            <label>
+              End
+              <input id="rangeEnd" type="number" inputmode="numeric">
+            </label>
+          </div>
+
+          <label for="excludedNumbers">Excluded numbers</label>
+          <input id="excludedNumbers" type="text" placeholder="Example: 4, 9, 17">
+          <p class="hint">Separate numbers with commas or spaces.</p>
+
+          <p class="private-warning" id="rangeWarning" aria-live="polite"></p>
+        </section>
+
+        <section class="control-panel" aria-labelledby="settingsTitle">
+          <h3 id="settingsTitle">Display and picking</h3>
+          <label class="toggle-line">
+            <input id="countdownMode" type="checkbox">
+            Countdown before reveal
+          </label>
+          <label class="toggle-line">
+            <input id="showRecent" type="checkbox">
+            Show recent picks
+          </label>
+          <label class="toggle-line">
+            <input id="showLeftCount" type="checkbox">
+            Show numbers-left count
+          </label>
+        </section>
+
+        <section class="control-panel" aria-labelledby="cueTitle">
+          <h3 id="cueTitle">Teacher Cue</h3>
+          <p class="hint">Privately set the next number when a prepared student should share.</p>
+          <label for="cueInput">Next cued number</label>
+          <input id="cueInput" type="number" inputmode="numeric">
+          <div class="button-row">
+            <button id="setCue" type="button">Set cue</button>
+            <button class="secondary" id="clearCue" type="button">Clear cue</button>
+          </div>
+          <p class="cue-status" id="cueStatus" aria-live="polite">No cue set</p>
+        </section>
+
+        <section class="control-panel" aria-labelledby="fairnessTitle">
+          <h3 id="fairnessTitle">Fairness Mode</h3>
+          <label for="fairnessMode">Mode</label>
+          <select id="fairnessMode">
+            <option value="daily">Daily cycle</option>
+            <option value="multiDay">Multi-day balance</option>
+            <option value="random">True random</option>
+          </select>
+          <p class="hint">Fairness memory is private and only affects how the next number is chosen.</p>
+        </section>
+
+        <section class="control-panel wide-panel" aria-labelledby="dashboardTitle">
+          <h3 id="dashboardTitle">Fairness Dashboard</h3>
+          <div class="dashboard-summary" id="fairnessSummary"></div>
+          <div class="dashboard-table-wrap">
+            <table class="dashboard-table">
+              <thead>
+                <tr>
+                  <th>Number</th>
+                  <th>Picked today</th>
+                  <th>Last 5 days</th>
+                  <th>All time</th>
+                </tr>
+              </thead>
+              <tbody id="fairnessTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="control-panel wide-panel" aria-labelledby="resetTitle">
+          <h3 id="resetTitle">Fairness Reset</h3>
+          <div class="button-stack reset-grid">
+            <button class="secondary" id="resetHistory" type="button">Reset today's picks</button>
+            <button class="secondary" id="startNewRound" type="button">Start new round</button>
+            <button class="secondary" id="resetFiveDay" type="button">Reset 5-day fairness memory</button>
+            <button class="danger" id="resetAllHistory" type="button">Reset all pick history</button>
+            <button class="danger" id="clearAll" type="button">New day reset</button>
+          </div>
+        </section>
+      </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
